@@ -54,5 +54,12 @@
             android:layout_height="wrap_content"
             android:text="ADD"
             android:onClick="Add"/>
+
+        <Button
+            android:id="@+id/find"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button"
+            android:onClick="find"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

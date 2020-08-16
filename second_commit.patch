@@ -1,0 +1,225 @@
+Index: app/src/main/java/com/example/testkotlin/classes/Product.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/testkotlin/classes/Product.kt	(revision 6b5740e546b78d62f8cca068b6c56fee69c91238)
++++ app/src/main/java/com/example/testkotlin/classes/Product.kt	(date 1597087003871)
+@@ -1,4 +1,4 @@
+-class Product(val id:Int,var labelle:String,var qte:Int,var price:Float){
++class Product(val id:String,var labelle:String,var qte:Int,var price:Float){
+     init{
+ 
+     }
+Index: app/src/main/java/com/example/testkotlin/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/testkotlin/MainActivity.kt	(revision 6b5740e546b78d62f8cca068b6c56fee69c91238)
++++ app/src/main/java/com/example/testkotlin/MainActivity.kt	(date 1597587213612)
+@@ -12,8 +12,11 @@
+ import android.widget.TextView
+ import android.widget.Toast
+ import androidx.appcompat.app.AppCompatViewInflater
++import com.google.firebase.firestore.ktx.firestore
++import com.google.firebase.ktx.Firebase
+ import kotlinx.android.synthetic.main.activity_main.*
+ class MainActivity : AppCompatActivity() {
++    val db = Firebase.firestore
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         setContentView(R.layout.activity_main)
+@@ -28,11 +31,31 @@
+         val price=findViewById<EditText>(R.id.price)
+ 
+ 
+-        val pro =   Product(id.text.toString().toInt(),labelle.text.toString(),qte.text.toString().toInt(),price.text.toString().toFloat())
++        val pro = hashMapOf("ID" to id.text.toString(),
++                                                   "Labelle" to labelle.text.toString(),
++                                                    "Qte" to qte.text.toString(),
++                                                       "Prix" to price.text.toString()     )
++            Product(id.text.toString(),labelle.text.toString(),qte.text.toString().toInt(),price.text.toString().toFloat())
+         id.setText("")
+         labelle.setText("")
+         qte.setText("")
+         price.setText("")
+-        Log.i("1","${pro.id}${pro.labelle}${pro.price}${pro.qte}")
++      //  Log.i("1","${pro.id}${pro.labelle}${pro.price}${pro.qte}")
++        db.collection("Produit").add(pro).addOnSuccessListener { documentReference -> Log.d("Tag1",
++            "DocumentSnapshot added with ID: ${documentReference.id}") }.addOnFailureListener{e->
++            Log.w("tagf","Error adding document",e)
++        }
++    }
++    fun find(view: View){
++        db.collection("users")
++            .get()
++            .addOnSuccessListener { result ->
++                for (document in result) {
++                    Log.d("f", "${document.id} => ${document.data}")
++                }
++            }
++            .addOnFailureListener { exception ->
++                Log.w("f", "Error getting documents.", exception)
++            }
+     }
+ }
+\ No newline at end of file
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- build.gradle	(revision 6b5740e546b78d62f8cca068b6c56fee69c91238)
++++ build.gradle	(date 1597586363949)
+@@ -6,8 +6,11 @@
+         jcenter()
+     }
+     dependencies {
++        classpath 'com.google.gms:google-services:4.3.3'
++
+         classpath "com.android.tools.build:gradle:4.0.1"
+         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
++       // classpath 'com.google.gms:google-services:4.2.0'
+ 
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_main.xml	(revision 6b5740e546b78d62f8cca068b6c56fee69c91238)
++++ app/src/main/res/layout/activity_main.xml	(date 1597587099572)
+@@ -54,5 +54,12 @@
+             android:layout_height="wrap_content"
+             android:text="ADD"
+             android:onClick="Add"/>
++
++        <Button
++            android:id="@+id/find"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:text="Button"
++            android:onClick="find"/>
+     </LinearLayout>
+ </androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision 6b5740e546b78d62f8cca068b6c56fee69c91238)
++++ app/build.gradle	(date 1597586342362)
+@@ -1,6 +1,7 @@
+ apply plugin: 'com.android.application'
+ apply plugin: 'kotlin-android'
+ apply plugin: 'kotlin-android-extensions'
++apply plugin: 'com.google.gms.google-services'
+ 
+ android {
+     compileSdkVersion 29
+@@ -29,8 +30,10 @@
+     implementation 'androidx.core:core-ktx:1.1.0'
+     implementation 'androidx.appcompat:appcompat:1.1.0'
+     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
++    implementation 'com.google.firebase:firebase-firestore:17.1.2'
+     testImplementation 'junit:junit:4.12'
+     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
++    implementation 'com.google.firebase:firebase-firestore-ktx:21.5.0'
+ 
+-}
+\ No newline at end of file
++}
+Index: .idea/mongoSettings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/mongoSettings.xml	(date 1597089753322)
++++ .idea/mongoSettings.xml	(date 1597089753322)
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="MongoConfiguration">
++    <option name="serverConfigurations">
++      <list>
++        <ServerConfiguration>
++          <option name="authenticationDatabase" value="5f319eb8f345b67f0eafd15e" />
++          <option name="authenticationMechanism" value="SCRAM-SHA-1" />
++          <option name="label" value="project 0" />
++          <option name="password" value="bacem19961996" />
++          <option name="serverUrls">
++            <list>
++              <option value="localhost:27017" />
++            </list>
++          </option>
++          <option name="sshTunnelingConfiguration">
++            <SshTunnelingConfiguration />
++          </option>
++          <option name="username" value="bacem" />
++        </ServerConfiguration>
++      </list>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: app/google-services.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/google-services.json	(date 1597585330457)
++++ app/google-services.json	(date 1597585330457)
+@@ -0,0 +1,48 @@
++{
++  "project_info": {
++    "project_number": "884404672655",
++    "firebase_url": "https://testkotlin-b4bf5.firebaseio.com",
++    "project_id": "testkotlin-b4bf5",
++    "storage_bucket": "testkotlin-b4bf5.appspot.com"
++  },
++  "client": [
++    {
++      "client_info": {
++        "mobilesdk_app_id": "1:884404672655:android:152d728d6f2bb91d35f8fa",
++        "android_client_info": {
++          "package_name": "com.example.testkotlin"
++        }
++      },
++      "oauth_client": [
++        {
++          "client_id": "884404672655-ogef80odad4nnul4fi8791nrd279ildi.apps.googleusercontent.com",
++          "client_type": 1,
++          "android_info": {
++            "package_name": "com.example.testkotlin",
++            "certificate_hash": "13ba80767d4158d7267aceacf0558025003439a9"
++          }
++        },
++        {
++          "client_id": "884404672655-l7pava7aaku3h41qakprpg3kvnl7mv6r.apps.googleusercontent.com",
++          "client_type": 3
++        }
++      ],
++      "api_key": [
++        {
++          "current_key": "AIzaSyDR3KZb2KT7NEbthfSSz0_R__eT9flyoNg"
++        }
++      ],
++      "services": {
++        "appinvite_service": {
++          "other_platform_oauth_client": [
++            {
++              "client_id": "884404672655-l7pava7aaku3h41qakprpg3kvnl7mv6r.apps.googleusercontent.com",
++              "client_type": 3
++            }
++          ]
++        }
++      }
++    }
++  ],
++  "configuration_version": "1"
++}
+\ No newline at end of file
